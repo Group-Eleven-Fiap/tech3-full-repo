@@ -1,0 +1,1043 @@
+{
+  "info": {
+    "name": "MS Agendamento - Testes da API",
+    "description": "Collection completa da API do ms-agendamento, com fluxos positivos, validações, autenticação, autorização e conflitos. Execute as pastas na ordem apresentada.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "tokenEnfermeiro",
+      "value": ""
+    },
+    {
+      "key": "tokenMedico",
+      "value": ""
+    },
+    {
+      "key": "tokenPaciente",
+      "value": ""
+    },
+    {
+      "key": "cadastroUsername",
+      "value": "avaliador-paciente"
+    },
+    {
+      "key": "cadastroPassword",
+      "value": "avaliador123"
+    },
+    {
+      "key": "cadastroNome",
+      "value": "Paciente Avaliador"
+    },
+    {
+      "key": "cadastroEmail",
+      "value": "seu-email@example.com"
+    },
+    {
+      "key": "idPacienteCadastro",
+      "value": ""
+    },
+    {
+      "key": "appointmentId",
+      "value": ""
+    },
+    {
+      "key": "inicioCriacao",
+      "value": "2030-04-15T14:00:00Z"
+    },
+    {
+      "key": "fimCriacao",
+      "value": "2030-04-15T14:30:00Z"
+    },
+    {
+      "key": "inicioAtualizacao",
+      "value": "2030-04-15T15:00:00Z"
+    },
+    {
+      "key": "fimAtualizacao",
+      "value": "2030-04-15T15:30:00Z"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 - Autenticação",
+      "item": [
+        {
+          "name": "Cadastrar paciente do avaliador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{cadastroUsername}}\",\n  \"password\": \"{{cadastroPassword}}\",\n  \"nome\": \"{{cadastroNome}}\",\n  \"email\": \"{{cadastroEmail}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/registro",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "registro"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Cadastra paciente', function () { pm.response.to.have.status(201); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Retorna dados públicos do paciente', function () { pm.expect(body.id).to.be.a('number'); pm.expect(body.username).to.eql(pm.collectionVariables.get('cadastroUsername')); pm.expect(body.email).to.eql(pm.collectionVariables.get('cadastroEmail')); });",
+                  "pm.collectionVariables.set('idPacienteCadastro', body.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login - Enfermeiro",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"enfermeiro\",\n  \"password\": \"enfermeiro123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Retorna sucesso no login', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Retorna token JWT', function () { pm.expect(body.accessToken).to.be.a('string').and.not.empty; });",
+                  "pm.collectionVariables.set('tokenEnfermeiro', body.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login - Médico",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"medico\",\n  \"password\": \"medico123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Retorna sucesso no login', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Retorna token JWT', function () { pm.expect(body.accessToken).to.be.a('string').and.not.empty; });",
+                  "pm.collectionVariables.set('tokenMedico', body.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login - Paciente cadastrado",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{cadastroUsername}}\",\n  \"password\": \"{{cadastroPassword}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Retorna sucesso no login', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Retorna token JWT', function () { pm.expect(body.accessToken).to.be.a('string').and.not.empty; });",
+                  "pm.collectionVariables.set('tokenPaciente', body.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login - Credenciais inválidas (negativo)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"enfermeiro\",\n  \"password\": \"senha-incorreta\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Rejeita credenciais inválidas', function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login - Campos obrigatórios ausentes (negativo)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Rejeita campos de login ausentes', function () { pm.response.to.have.status(400); });",
+                  "pm.test('Informa falha de validação', function () { pm.expect(pm.response.json().message).to.eql('Falha de validação'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 - Segurança e validações negativas",
+      "item": [
+        {
+          "name": "Listar sem autenticação",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agendamentos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agendamentos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Exige autenticação', function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar com token inválido",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer token-invalido"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agendamentos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agendamentos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Rejeita token inválido', function () { pm.response.to.have.status(401); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Criar como médico (não permitido)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenMedico}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idPaciente\": 3,\n  \"idMedico\": 1,\n  \"dataHoraInicio\": \"2099-01-01T10:00:00Z\",\n  \"dataHoraFim\": \"2099-01-01T10:30:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agendamentos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agendamentos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Bloqueia criação por médico', function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar próprios agendamentos como enfermeiro (não permitido)",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEnfermeiro}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agendamentos/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agendamentos",
+                "me"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Bloqueia listagem própria por enfermeiro', function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Criar com campos inválidos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEnfermeiro}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idPaciente\": 0,\n  \"idMedico\": -1,\n  \"dataHoraInicio\": null,\n  \"dataHoraFim\": null\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agendamentos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agendamentos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Rejeita dados inválidos', function () { pm.response.to.have.status(400); });",
+                  "pm.test('Retorna erros de campos', function () { pm.expect(pm.response.json().fieldErrors).to.be.an('object'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Criar com término anterior ao início",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEnfermeiro}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idPaciente\": 3,\n  \"idMedico\": 1,\n  \"dataHoraInicio\": \"2099-01-01T10:30:00Z\",\n  \"dataHoraFim\": \"2099-01-01T10:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agendamentos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agendamentos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Rejeita período inválido', function () { pm.response.to.have.status(400); });",
+                  "pm.test('Informa regra do período', function () { pm.expect(pm.response.json().message).to.include('término'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consultar agendamento inexistente",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenMedico}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agendamentos/999999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agendamentos",
+                "999999999"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Retorna agendamento inexistente', function () { pm.response.to.have.status(404); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 - Fluxo positivo de agendamento",
+      "item": [
+        {
+          "name": "Criar agendamento - Enfermeiro",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const janelaAleatoria = Math.floor(Math.random() * 60 * 60 * 1000);",
+                  "const inicio = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000 + janelaAleatoria);",
+                  "const fim = new Date(inicio.getTime() + 30 * 60 * 1000);",
+                  "pm.collectionVariables.set('inicioCriacao', inicio.toISOString());",
+                  "pm.collectionVariables.set('fimCriacao', fim.toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Cria agendamento', function () { pm.response.to.have.status(201); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Retorna identificador', function () { pm.expect(body.id).to.be.a('number'); });",
+                  "pm.test('Retorna campos em português', function () { pm.expect(body).to.have.property('idPaciente'); pm.expect(body).to.have.property('idMedico'); pm.expect(body).to.have.property('dataHoraInicio'); pm.expect(body).to.have.property('dataHoraFim'); });",
+                  "pm.collectionVariables.set('appointmentId', body.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEnfermeiro}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idPaciente\": {{idPacienteCadastro}},\n  \"idMedico\": 1,\n  \"dataHoraInicio\": \"{{inicioCriacao}}\",\n  \"dataHoraFim\": \"{{fimCriacao}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agendamentos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agendamentos"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar todos - Médico",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenMedico}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agendamentos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agendamentos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Lista agendamentos para médico', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Retorna uma lista', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar todos - Enfermeiro",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEnfermeiro}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agendamentos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agendamentos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Lista agendamentos para enfermeiro', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Retorna uma lista', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar meus agendamentos - Paciente",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPaciente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agendamentos/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agendamentos",
+                "me"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Lista agendamentos do paciente', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Retorna uma lista', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consultar agendamento - Médico",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenMedico}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agendamentos/{{appointmentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agendamentos",
+                "{{appointmentId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Consulta agendamento por médico', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Retorna o agendamento criado', function () { pm.expect(pm.response.json().id).to.eql(Number(pm.collectionVariables.get('appointmentId'))); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consultar próprio agendamento - Paciente",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPaciente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agendamentos/{{appointmentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agendamentos",
+                "{{appointmentId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Paciente consulta o próprio agendamento', function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Atualizar agendamento do avaliador - Médico",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const janelaAleatoria = Math.floor(Math.random() * 60 * 60 * 1000);",
+                  "const inicio = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000 + janelaAleatoria);",
+                  "const fim = new Date(inicio.getTime() + 30 * 60 * 1000);",
+                  "pm.collectionVariables.set('inicioAtualizacao', inicio.toISOString());",
+                  "pm.collectionVariables.set('fimAtualizacao', fim.toISOString());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Atualiza agendamento do avaliador', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Mantém identificador e paciente do avaliador', function () { const body = pm.response.json(); pm.expect(body.id).to.eql(Number(pm.collectionVariables.get('appointmentId'))); pm.expect(body.idPaciente).to.eql(Number(pm.collectionVariables.get('idPacienteCadastro'))); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenMedico}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idPaciente\": {{idPacienteCadastro}},\n  \"idMedico\": 1,\n  \"dataHoraInicio\": \"{{inicioAtualizacao}}\",\n  \"dataHoraFim\": \"{{fimAtualizacao}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agendamentos/{{appointmentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agendamentos",
+                "{{appointmentId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Conflitos",
+      "item": [
+        {
+          "name": "Criar horário sobreposto (negativo)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEnfermeiro}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idPaciente\": {{idPacienteCadastro}},\n  \"idMedico\": 1,\n  \"dataHoraInicio\": \"{{inicioAtualizacao}}\",\n  \"dataHoraFim\": \"{{fimAtualizacao}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agendamentos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agendamentos"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Rejeita horário sobreposto', function () { pm.response.to.have.status(409); });",
+                  "pm.test('Informa conflito de agendamento', function () { pm.expect(pm.response.json().message).to.include('já possui um agendamento'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Atualizar como enfermeiro (não permitido)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEnfermeiro}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idPaciente\": {{idPacienteCadastro}},\n  \"idMedico\": 1,\n  \"dataHoraInicio\": \"{{inicioAtualizacao}}\",\n  \"dataHoraFim\": \"{{fimAtualizacao}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/agendamentos/{{appointmentId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "agendamentos",
+                "{{appointmentId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Bloqueia atualização por enfermeiro', function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

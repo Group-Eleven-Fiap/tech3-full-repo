@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: ms-notificacao
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+
+  mail:
+    host: ${SPRING_MAIL_HOST:smtp.gmail.com}
+    port: ${SPRING_MAIL_PORT:587}
+    username: ${SPRING_MAIL_USERNAME:fiap0674@gmail.com}
+    password: ${SPRING_MAIL_PASSWORD:qtwopvuwrieaflvm}
+    default-encoding: UTF-8
+    properties:
+      mail:
+        debug: ${SPRING_MAIL_DEBUG:false}
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
+server:
+  port: ${SERVER_PORT:8080}
+
+logging:
+  level:
+    root: INFO
+    br.com.fiap.ms_notificacao: INFO
+
+app:
+  retry:
+    max-attempts: ${NOTIFICACAO_RETRY_MAX_ATTEMPTS:3}
+    delay-ms: ${NOTIFICACAO_RETRY_DELAY_MS:1000}
+    multiplier: ${NOTIFICACAO_RETRY_MULTIPLIER:2}
+  messaging:
+    exchange: ${AGENDAMENTO_EVENTS_EXCHANGE:agendamento.events}
+    queue: ${NOTIFICACAO_QUEUE:consultas-notificacoes-queue}
+    routing-key: ${AGENDAMENTO_EVENTS_ROUTING_KEY:agendamento.appointment.changed}
+    dlx-exchange: ${NOTIFICACAO_DLX_EXCHANGE:agendamento.events.dlx}
+    dlq-queue: ${NOTIFICACAO_DLQ_QUEUE:consultas-notificacoes-dlq}
+    dlq-routing-key: ${NOTIFICACAO_DLQ_ROUTING_KEY:agendamento.appointment.changed.dlq}
