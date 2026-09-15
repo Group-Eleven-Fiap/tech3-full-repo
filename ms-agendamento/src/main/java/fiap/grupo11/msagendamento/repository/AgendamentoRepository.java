@@ -11,6 +11,8 @@ import java.util.List;
 
 public interface AgendamentoRepository extends JpaRepository<Agendamento, Long> {
 
+    List<Agendamento> findByPatientIdAndScheduledAtGreaterThanEqualOrderByScheduledAtAsc(Long patientId, Instant from);
+
     List<Agendamento> findByPatientIdOrderByScheduledAtAsc(Long patientId);
 
     List<Agendamento> findByScheduledAtBetweenOrderByScheduledAtAsc(Instant from, Instant to);
