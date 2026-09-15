@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "MS Agendamento - Testes da API",
-    "description": "Collection completa da API do ms-agendamento, com fluxos positivos, validações, autenticação, autorização e conflitos. Execute as pastas na ordem apresentada.",
+    "description": "Collection da API do ms-agendamento, com REST, GraphQL, autenticação, autorização, validações e conflitos. Execute as pastas na ordem apresentada.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -1032,6 +1032,100 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('Bloqueia atualização por enfermeiro', function () { pm.response.to.have.status(403); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 - GraphQL",
+      "item": [
+        {
+          "name": "Consultar histórico futuro do paciente avaliador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPaciente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query HistoricoPaciente($patientId: ID!, $futureOnly: Boolean!) { historicoPaciente(patientId: $patientId, futureOnly: $futureOnly) { id patientId professionalId scheduledAt endsAt createdAt updatedAt } }\",\n  \"variables\": {\n    \"patientId\": \"{{idPacienteCadastro}}\",\n    \"futureOnly\": true\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "graphql"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Consulta GraphQL com sucesso', function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test('Não retorna erros GraphQL', function () { pm.expect(body.errors).to.not.exist; });",
+                  "pm.test('Retorna histórico do paciente avaliador', function () { const consultas = body.data.historicoPaciente; pm.expect(consultas).to.be.an('array').and.not.empty; consultas.forEach(function (consulta) { pm.expect(String(consulta.patientId)).to.eql(String(pm.collectionVariables.get('idPacienteCadastro'))); }); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consultar histórico sem autenticação (negativo)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"query\": \"query { historicoPaciente(patientId: \\\"{{idPacienteCadastro}}\\\", futureOnly: true) { id } }\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/graphql",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "graphql"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Bloqueia GraphQL sem autenticação', function () { pm.response.to.have.status(401); });"
                 ]
               }
             }

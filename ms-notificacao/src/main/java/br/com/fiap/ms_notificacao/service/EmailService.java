@@ -27,13 +27,7 @@ public class EmailService implements EmailSender {
     public void enviar(ConsultaNotificacaoDTO dto) {
         try {
             var mensagem = emailTemplateService.criarMensagem(dto);
-            log.info("email.saida consultaId={} destinatario={} assunto={} conteudo={}",
-                    dto.idConsulta(),
-                    String.join(",", mensagem.getTo()),
-                    mensagem.getSubject(),
-                    mensagem.getText());
             mailSender.send(mensagem);
-            log.info("email.sucesso consultaId={} tipoAcao={} email={}", dto.idConsulta(), dto.tipoAcao(), dto.emailPaciente());
         } catch (MailAuthenticationException e) {
             log.error("email.falha-configuracao consultaId={} destinatario={} motivo=autenticacao SMTP recusada; " +
                             "configure SPRING_MAIL_USERNAME e SPRING_MAIL_PASSWORD com uma senha de aplicativo do Gmail",

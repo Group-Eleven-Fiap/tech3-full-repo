@@ -40,6 +40,7 @@ Antes da primeira execução, ajuste `cadastroNome`, `cadastroEmail`, `cadastroU
 
 - login e cadastro;
 - criação, consulta, atualização e listagem de agendamentos;
+- consulta do histórico futuro do paciente via GraphQL;
 - validações, conflitos, autenticação e autorização.
 
 Os horários são gerados automaticamente. Para executar novamente, use outro username/e-mail ou
